@@ -87,6 +87,7 @@ export function FrpcSetupDialog({ open, onSetupComplete }: FrpcSetupDialogProps)
         <Dialog open={open} onOpenChange={() => {}}>
             <DialogContent 
                 className="sm:max-w-md" 
+                hideCloseButton
                 onPointerDownOutside={(e) => e.preventDefault()}
                 onEscapeKeyDown={(e) => e.preventDefault()}
             >
