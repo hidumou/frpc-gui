@@ -22,6 +22,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     reload: (id: string) => ipcRenderer.invoke('frpc:reload', id),
     getStatus: (id: string) => ipcRenderer.invoke('frpc:status', id),
     getProxyStatus: (id: string) => ipcRenderer.invoke('frpc:proxy-status', id),
+    check: () => ipcRenderer.invoke('frpc:check'),
+    getPath: () => ipcRenderer.invoke('frpc:get-path'),
+    setPath: (path: string) => ipcRenderer.invoke('frpc:set-path', path),
+    verifyPath: (path: string) => ipcRenderer.invoke('frpc:verify-path', path),
     onLog: (callback: (entry: unknown) => void) => {
       const listener = (_event: unknown, entry: unknown) => callback(entry)
       ipcRenderer.on('frpc:log', listener)
@@ -68,6 +72,10 @@ export interface ElectronAPI {
     reload: (id: string) => Promise<void>
     getStatus: (id: string) => Promise<unknown>
     getProxyStatus: (id: string) => Promise<unknown[]>
+    check: () => Promise<{ available: boolean; version?: string; path?: string; error?: string }>
+    getPath: () => Promise<string | null>
+    setPath: (path: string) => Promise<boolean>
+    verifyPath: (path: string) => Promise<{ valid: boolean; version?: string; error?: string }>
     onLog: (callback: (entry: LogEntry) => void) => () => void
   }
   system: {

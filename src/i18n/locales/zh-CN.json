@@ -271,5 +271,21 @@
         "thanks": "本项目参考 frpmgr 实现",
         "thanksContributors": "感谢所有开源项目的贡献者",
         "license": "© 2024 FRP GUI. MIT License"
+    },
+    "frpcSetup": {
+        "title": "配置 FRPC",
+        "description": "未检测到 frpc 可执行文件。请选择 frpc 文件路径后才能继续使用。",
+        "checking": "正在检测 frpc...",
+        "frpcPath": "FRPC 文件路径",
+        "frpcPathPlaceholder": "选择或输入 frpc 可执行文件路径",
+        "frpcPathDesc": "请选择下载的 frpc 可执行文件",
+        "selectFrpc": "选择 frpc 可执行文件",
+        "executable": "可执行文件",
+        "verifying": "正在验证...",
+        "verified": "验证成功，版本: {{version}}",
+        "verifyFailed": "验证失败",
+        "downloadHint": "没有 frpc？",
+        "downloadHintDesc": "请从 FRP 官方 GitHub 下载对应系统的 frpc 文件:",
+        "confirm": "确认并继续"
     }
 }

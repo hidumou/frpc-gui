@@ -44,7 +44,7 @@ export function ConfigDialog({ open, onOpenChange, config }: ConfigDialogProps) 
     const [name, setName] = useState('')
     const [common, setCommon] = useState<ClientCommon>(defaultCommon)
     const [manualStart, setManualStart] = useState(false)
-    const [authMethod, setAuthMethod] = useState<string>('')
+    const [authMethod, setAuthMethod] = useState<string>('none')
     const [token, setToken] = useState('')
 
     useEffect(() => {
@@ -52,13 +52,13 @@ export function ConfigDialog({ open, onOpenChange, config }: ConfigDialogProps) 
             setName(config.name)
             setCommon(config.common)
             setManualStart(config.manualStart || false)
-            setAuthMethod(config.common.auth?.method || '')
+            setAuthMethod(config.common.auth?.method || 'none')
             setToken(config.common.auth?.token || '')
         } else {
             setName('')
             setCommon(defaultCommon)
             setManualStart(false)
-            setAuthMethod('')
+            setAuthMethod('none')
             setToken('')
         }
     }, [config, open])
@@ -79,7 +79,7 @@ export function ConfigDialog({ open, onOpenChange, config }: ConfigDialogProps) 
                 name: name.trim(),
                 common: {
                     ...common,
-                    auth: authMethod
+                    auth: authMethod && authMethod !== 'none'
                         ? {
                             method: authMethod as 'token' | 'oidc',
                             token: authMethod === 'token' ? token : undefined,
@@ -199,7 +199,7 @@ export function ConfigDialog({ open, onOpenChange, config }: ConfigDialogProps) 
                                     <SelectValue placeholder={t('auth.noAuth')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">{t('auth.noAuth')}</SelectItem>
+                                    <SelectItem value="none">{t('auth.noAuth')}</SelectItem>
                                     {AuthMethods.map((m) => (
                                         <SelectItem key={m} value={m}>
                                             {m.toUpperCase()}

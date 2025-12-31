@@ -49,6 +49,15 @@ export class FrpcManager extends EventEmitter {
     this.frpcPath = this.findFrpcBinary()
   }
 
+  // Allow setting frpc path from outside
+  setFrpcPath(frpcPath: string): void {
+    this.frpcPath = frpcPath
+  }
+
+  getFrpcPath(): string {
+    return this.frpcPath
+  }
+
   private emitLog(id: string, level: 'info' | 'warn' | 'error', message: string) {
     const entry: LogEntry = {
       id,

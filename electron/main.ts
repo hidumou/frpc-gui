@@ -1,5 +1,8 @@
 import { app, BrowserWindow, ipcMain, shell, dialog, Tray, Menu, nativeImage } from 'electron'
 import path from 'path'
+import { execSync } from 'child_process'
+import * as fs from 'fs'
+import * as os from 'os'
 import { ConfigStore } from './services/config-store'
 import { FrpcManager, LogEntry } from './services/frpc-manager'
 
@@ -197,8 +200,147 @@ ipcMain.handle('system:get-platform', async () => {
   return process.platform
 })
 
+// IPC handlers - FRPC Binary Management
+ipcMain.handle('frpc:check', async () => {
+  return checkFrpcAvailable()
+})
+
+ipcMain.handle('frpc:get-path', async () => {
+  return getFrpcPath()
+})
+
+ipcMain.handle('frpc:set-path', async (_event, frpcPath: string) => {
+  return setFrpcPath(frpcPath)
+})
+
+ipcMain.handle('frpc:verify-path', async (_event, frpcPath: string) => {
+  return verifyFrpcPath(frpcPath)
+})
+
+// FRPC path management
+function getSettingsPath(): string {
+  return path.join(app.getPath('userData'), 'settings.json')
+}
+
+function loadSettings(): { frpcPath?: string } {
+  try {
+    const settingsPath = getSettingsPath()
+    if (fs.existsSync(settingsPath)) {
+      const content = fs.readFileSync(settingsPath, 'utf-8')
+      return JSON.parse(content)
+    }
+  } catch (error) {
+    console.error('Failed to load settings:', error)
+  }
+  return {}
+}
+
+function saveSettings(settings: { frpcPath?: string }): void {
+  try {
+    const settingsPath = getSettingsPath()
+    const existing = loadSettings()
+    fs.writeFileSync(settingsPath, JSON.stringify({ ...existing, ...settings }, null, 2), 'utf-8')
+  } catch (error) {
+    console.error('Failed to save settings:', error)
+  }
+}
+
+function getFrpcPath(): string | null {
+  const settings = loadSettings()
+  return settings.frpcPath || null
+}
+
+function setFrpcPath(frpcPath: string): boolean {
+  const result = verifyFrpcPath(frpcPath)
+  if (result.valid) {
+    saveSettings({ frpcPath })
+    // Update FrpcManager's path
+    frpcManager.setFrpcPath(frpcPath)
+    return true
+  }
+  return false
+}
+
+function verifyFrpcPath(frpcPath: string): { valid: boolean; version?: string; error?: string } {
+  try {
+    // Check if file exists
+    if (!fs.existsSync(frpcPath)) {
+      return { valid: false, error: 'File not found' }
+    }
+    
+    // Try to execute frpc -v
+    const output = execSync(`"${frpcPath}" -v`, {
+      timeout: 5000,
+      encoding: 'utf-8',
+      windowsHide: true,
+    })
+    
+    // Parse version from output (e.g., "frpc version 0.52.3")
+    const versionMatch = output.match(/frpc version (\d+\.\d+\.\d+)/i) || output.match(/(\d+\.\d+\.\d+)/)
+    const version = versionMatch ? versionMatch[1] : output.trim()
+    
+    return { valid: true, version }
+  } catch (error) {
+    return { valid: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
+function checkFrpcAvailable(): { available: boolean; version?: string; path?: string; error?: string } {
+  // First check saved path
+  const savedPath = getFrpcPath()
+  if (savedPath) {
+    const result = verifyFrpcPath(savedPath)
+    if (result.valid) {
+      return { available: true, version: result.version, path: savedPath }
+    }
+  }
+  
+  // Try to find frpc in common locations
+  const platform = os.platform()
+  const binaryName = platform === 'win32' ? 'frpc.exe' : 'frpc'
+  
+  const searchPaths = [
+    // App resources
+    path.join(app.getAppPath(), 'resources', binaryName),
+    path.join(app.getAppPath(), '..', 'resources', binaryName),
+    // User data
+    path.join(app.getPath('userData'), binaryName),
+  ]
+  
+  for (const searchPath of searchPaths) {
+    if (fs.existsSync(searchPath)) {
+      const result = verifyFrpcPath(searchPath)
+      if (result.valid) {
+        // Save this path
+        saveSettings({ frpcPath: searchPath })
+        return { available: true, version: result.version, path: searchPath }
+      }
+    }
+  }
+  
+  // Try system PATH
+  try {
+    const output = execSync(`${binaryName} -v`, {
+      timeout: 5000,
+      encoding: 'utf-8',
+      windowsHide: true,
+    })
+    const versionMatch = output.match(/frpc version (\d+\.\d+\.\d+)/i) || output.match(/(\d+\.\d+\.\d+)/)
+    const version = versionMatch ? versionMatch[1] : output.trim()
+    return { available: true, version, path: binaryName }
+  } catch {
+    return { available: false, error: 'frpc not found in PATH' }
+  }
+}
+
 // App lifecycle
 app.whenReady().then(() => {
+  // Initialize frpc path from saved settings
+  const savedPath = getFrpcPath()
+  if (savedPath) {
+    frpcManager.setFrpcPath(savedPath)
+  }
+  
   createWindow()
   createTray()
 

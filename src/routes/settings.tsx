@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FolderOpen } from 'lucide-react'
+import { FolderOpen, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { LogLevels, Protocols, type AppConfig, type Protocol } from '@/types'
 import { languages } from '@/i18n'
@@ -17,6 +17,10 @@ function SettingsPage() {
     const { t, i18n } = useTranslation()
     const { toast } = useToast()
     const [appPaths, setAppPaths] = useState({ userData: '', logs: '', temp: '' })
+    const [frpcPath, setFrpcPath] = useState('')
+    const [frpcVersion, setFrpcVersion] = useState<string | null>(null)
+    const [verifying, setVerifying] = useState(false)
+    const [verifyResult, setVerifyResult] = useState<{ valid: boolean; version?: string; error?: string } | null>(null)
     const [settings, setSettings] = useState<AppConfig>({
         lang: i18n.language,
         checkUpdate: true,
@@ -32,19 +36,64 @@ function SettingsPage() {
 
     useEffect(() => {
         window.electronAPI.system.getAppPath().then(setAppPaths)
+        loadFrpcInfo()
     }, [])
+
+    const loadFrpcInfo = async () => {
+        try {
+            const result = await window.electronAPI.frpc.check()
+            if (result.available) {
+                setFrpcPath(result.path || '')
+                setFrpcVersion(result.version || null)
+            }
+        } catch (error) {
+            console.error('Failed to load frpc info:', error)
+        }
+    }
 
     const handleOpenFolder = async (path: string) => {
         await window.electronAPI.system.openFolder(path)
     }
 
     const handleSelectFrpcPath = async () => {
+        const platform = await window.electronAPI.system.getPlatform()
+        
+        // Build filters based on platform
+        const filters: { name: string; extensions: string[] }[] = []
+        if (platform === 'win32') {
+            filters.push({ name: t('frpcSetup.executable'), extensions: ['exe'] })
+        }
+        // For macOS and Linux, we don't add filters because executables don't have extensions
+        
         const filePath = await window.electronAPI.system.selectFile({
             title: t('settings.selectFrpc'),
-            filters: [{ name: 'Executable', extensions: ['exe', ''] }],
+            filters: filters.length > 0 ? filters : undefined,
         })
+        
         if (filePath) {
-            toast({ title: t('settings.frpcPathSelected'), description: filePath })
+            setFrpcPath(filePath)
+            // Verify the selected path
+            setVerifying(true)
+            try {
+                const result = await window.electronAPI.frpc.verifyPath(filePath)
+                setVerifyResult(result)
+                if (result.valid) {
+                    // Save the path
+                    const success = await window.electronAPI.frpc.setPath(filePath)
+                    if (success) {
+                        setFrpcVersion(result.version || null)
+                        toast({ title: t('settings.frpcPathSelected'), description: `${filePath} (v${result.version})` })
+                    }
+                } else {
+                    toast({ 
+                        title: t('common.error'), 
+                        description: result.error,
+                        variant: 'destructive'
+                    })
+                }
+            } finally {
+                setVerifying(false)
+            }
         }
     }
 
@@ -115,11 +164,31 @@ function SettingsPage() {
                     <div className="space-y-2">
                         <Label>{t('settings.frpcPath')}</Label>
                         <div className="flex gap-2">
-                            <Input placeholder={t('settings.frpcPathPlaceholder')} readOnly />
-                            <Button variant="outline" onClick={handleSelectFrpcPath}>
-                                <FolderOpen className="h-4 w-4" />
+                            <Input 
+                                value={frpcPath} 
+                                placeholder={t('settings.frpcPathPlaceholder')} 
+                                readOnly 
+                            />
+                            <Button variant="outline" onClick={handleSelectFrpcPath} disabled={verifying}>
+                                {verifying ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <FolderOpen className="h-4 w-4" />
+                                )}
                             </Button>
                         </div>
+                        {frpcVersion && (
+                            <div className="flex items-center gap-2 text-sm text-green-600">
+                                <CheckCircle2 className="h-4 w-4" />
+                                {t('frpcSetup.verified', { version: frpcVersion })}
+                            </div>
+                        )}
+                        {verifyResult && !verifyResult.valid && (
+                            <div className="flex items-center gap-2 text-sm text-red-500">
+                                <AlertCircle className="h-4 w-4" />
+                                {verifyResult.error}
+                            </div>
+                        )}
                         <p className="text-sm text-muted-foreground">{t('settings.frpcPathDesc')}</p>
                     </div>
                 </CardContent>

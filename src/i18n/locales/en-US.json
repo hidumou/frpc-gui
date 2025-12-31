@@ -271,5 +271,21 @@
         "thanks": "This project is based on frpmgr",
         "thanksContributors": "Thanks to all open source contributors",
         "license": "© 2024 FRP GUI. MIT License"
+    },
+    "frpcSetup": {
+        "title": "Configure FRPC",
+        "description": "frpc executable not found. Please select the frpc file path to continue.",
+        "checking": "Checking frpc...",
+        "frpcPath": "FRPC File Path",
+        "frpcPathPlaceholder": "Select or enter frpc executable path",
+        "frpcPathDesc": "Please select the downloaded frpc executable file",
+        "selectFrpc": "Select frpc executable",
+        "executable": "Executable",
+        "verifying": "Verifying...",
+        "verified": "Verified, version: {{version}}",
+        "verifyFailed": "Verification failed",
+        "downloadHint": "Don't have frpc?",
+        "downloadHintDesc": "Please download frpc for your system from FRP official GitHub:",
+        "confirm": "Confirm and Continue"
     }
 }
