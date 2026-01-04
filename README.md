@@ -6,6 +6,12 @@
 
 A modern, user-friendly GUI application for managing FRP (Fast Reverse Proxy) clients across multiple platforms.
 
+[![GitHub release](https://img.shields.io/github/v/release/hidumou/frpc-gui)](https://github.com/hidumou/frpc-gui/releases)
+[![License](https://img.shields.io/github/license/hidumou/frpc-gui)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/hidumou/frpc-gui/total)](https://github.com/hidumou/frpc-gui/releases)
+[![GitHub stars](https://img.shields.io/github/stars/hidumou/frpc-gui)](https://github.com/hidumou/frpc-gui/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/hidumou/frpc-gui)](https://github.com/hidumou/frpc-gui/issues)
+
 [English](./README.md) | [简体中文](./README_zh-CN.md)
 
 </div>
@@ -115,4 +121,3 @@ If you encounter any issues or have questions, please [open an issue](https://gi
 
 - [FRP](https://github.com/fatedier/frp) - Fast Reverse Proxy
 - [Electron](https://www.electronjs.org/) - Cross-platform desktop framework
-- All [contributors](https://github.com/hidumou/frp-gui/graphs/contributors) who helped make this project better

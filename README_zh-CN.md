@@ -6,6 +6,12 @@
 
 一个现代化、用户友好的 GUI 应用程序，用于在多个平台上管理 FRP (Fast Reverse Proxy) 客户端。
 
+[![GitHub release](https://img.shields.io/github/v/release/hidumou/frpc-gui)](https://github.com/hidumou/frpc-gui/releases)
+[![License](https://img.shields.io/github/license/hidumou/frpc-gui)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/hidumou/frpc-gui/total)](https://github.com/hidumou/frpc-gui/releases)
+[![GitHub stars](https://img.shields.io/github/stars/hidumou/frpc-gui)](https://github.com/hidumou/frpc-gui/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/hidumou/frpc-gui)](https://github.com/hidumou/frpc-gui/issues)
+
 [English](./README.md) | [简体中文](./README_zh-CN.md)
 
 </div>
@@ -115,4 +121,3 @@ MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
 
 - [FRP](https://github.com/fatedier/frp) - 快速反向代理
 - [Electron](https://www.electronjs.org/) - 跨平台桌面框架
-- 所有帮助改进这个项目的[贡献者](https://github.com/hidumou/frp-gui/graphs/contributors)
