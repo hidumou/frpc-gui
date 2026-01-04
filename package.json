@@ -84,13 +84,6 @@
       ],
       "icon": "public/icon.ico"
     },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "icon": "public/icon.png"
-    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true

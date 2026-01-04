@@ -51,7 +51,6 @@
 
 - **macOS**：下载 `.dmg` 或 `.zip` 文件
 - **Windows**：下载 `.exe` 安装程序或 `.zip` 压缩包
-- **Linux**：下载 `.AppImage` 或 `.deb` 安装包
 
 ### 从源代码构建
 

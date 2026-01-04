@@ -51,7 +51,6 @@ You can download the latest release from the [Releases](https://github.com/hidum
 
 - **macOS**: Download `.dmg` or `.zip` file
 - **Windows**: Download `.exe` installer or `.zip` archive
-- **Linux**: Download `.AppImage` or `.deb` package
 
 ### Build from Source
 
