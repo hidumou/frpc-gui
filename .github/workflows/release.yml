@@ -47,6 +47,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Sign macOS app (ad-hoc)
+        if: matrix.os == 'macos-latest'
+        run: |
+          find release -name "*.app" -type d -maxdepth 1 | while read app; do
+            codesign --force --deep --sign - "$app" || true
+          done
+
       - name: Upload artifacts (Windows)
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4

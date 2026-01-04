@@ -81,8 +81,11 @@
       "icon": "public/icon.icns",
       "type": "distribution",
       "gatekeeperAssess": false,
+      "hardenedRuntime": false,
       "extendInfo": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSDocumentsFolderUsageDescription": "This app needs access to the Documents folder to manage configuration files.",
+        "NSDownloadsFolderUsageDescription": "This app needs access to the Downloads folder to manage configuration files."
       }
     },
     "win": {
