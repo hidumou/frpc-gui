@@ -1,5 +1,5 @@
 {
-  "name": "frp-gui",
+  "name": "frpc-gui",
   "version": "1.0.0",
   "description": "Cross-platform FRP Client GUI Manager",
   "main": "dist-electron/main.js",
