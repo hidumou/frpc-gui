@@ -1,4 +1,4 @@
-# FRP GUI
+# FRPC GUI
 
 <div align="center">
 
@@ -70,7 +70,7 @@ The built application will be in the `release` directory.
 
 ## Usage
 
-1. **Launch the Application**: Open FRP GUI after installation
+1. **Launch the Application**: Open FRPC GUI after installation
 2. **Configure Server**: Add your FRP server address and port in Settings
 3. **Import Configuration**: Import your existing `frpc.toml` configuration file
 4. **Start Tunnels**: Enable and manage your tunnels from the dashboard

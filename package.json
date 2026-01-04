@@ -61,8 +61,8 @@
     "wait-on": "^9.0.3"
   },
   "build": {
-    "appId": "com.frp-gui.app",
-    "productName": "FRP GUI",
+    "appId": "com.frpc-gui.app",
+    "productName": "FRPC GUI",
     "directories": {
       "output": "release"
     },

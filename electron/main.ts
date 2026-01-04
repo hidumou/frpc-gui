@@ -95,7 +95,7 @@ function createTray() {
     },
   ])
 
-  tray.setToolTip('FRP GUI')
+  tray.setToolTip('FRPC GUI')
   tray.setContextMenu(contextMenu)
 
   tray.on('double-click', () => {
@@ -267,18 +267,18 @@ function verifyFrpcPath(frpcPath: string): { valid: boolean; version?: string; e
     if (!fs.existsSync(frpcPath)) {
       return { valid: false, error: 'File not found' }
     }
-    
+
     // Try to execute frpc -v
     const output = execSync(`"${frpcPath}" -v`, {
       timeout: 5000,
       encoding: 'utf-8',
       windowsHide: true,
     })
-    
+
     // Parse version from output (e.g., "frpc version 0.52.3")
     const versionMatch = output.match(/frpc version (\d+\.\d+\.\d+)/i) || output.match(/(\d+\.\d+\.\d+)/)
     const version = versionMatch ? versionMatch[1] : output.trim()
-    
+
     return { valid: true, version }
   } catch (error) {
     return { valid: false, error: error instanceof Error ? error.message : 'Unknown error' }
@@ -294,11 +294,11 @@ function checkFrpcAvailable(): { available: boolean; version?: string; path?: st
       return { available: true, version: result.version, path: savedPath }
     }
   }
-  
+
   // Try to find frpc in common locations
   const platform = os.platform()
   const binaryName = platform === 'win32' ? 'frpc.exe' : 'frpc'
-  
+
   const searchPaths = [
     // App resources
     path.join(app.getAppPath(), 'resources', binaryName),
@@ -306,7 +306,7 @@ function checkFrpcAvailable(): { available: boolean; version?: string; path?: st
     // User data
     path.join(app.getPath('userData'), binaryName),
   ]
-  
+
   for (const searchPath of searchPaths) {
     if (fs.existsSync(searchPath)) {
       const result = verifyFrpcPath(searchPath)
@@ -317,7 +317,7 @@ function checkFrpcAvailable(): { available: boolean; version?: string; path?: st
       }
     }
   }
-  
+
   // Try system PATH
   try {
     const output = execSync(`${binaryName} -v`, {
@@ -340,7 +340,7 @@ app.whenReady().then(() => {
   if (savedPath) {
     frpcManager.setFrpcPath(savedPath)
   }
-  
+
   createWindow()
   createTray()
 

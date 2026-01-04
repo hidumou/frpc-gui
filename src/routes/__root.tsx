@@ -100,9 +100,9 @@ function RootLayout() {
     return (
         <div className="flex h-screen bg-background">
             {/* FRPC Setup Dialog - blocks UI until frpc is configured */}
-            <FrpcSetupDialog 
-                open={showSetupDialog && !frpcAvailable} 
-                onSetupComplete={handleSetupComplete} 
+            <FrpcSetupDialog
+                open={showSetupDialog && !frpcAvailable}
+                onSetupComplete={handleSetupComplete}
             />
 
             {/* Mobile: Sheet drawer */}
@@ -121,7 +121,7 @@ function RootLayout() {
                         <SheetHeader className="p-4 border-b">
                             <SheetTitle className="flex items-center gap-2 text-xl font-bold">
                                 <Server className="w-6 h-6 text-primary" />
-                                FRP GUI
+                                FRPC GUI
                             </SheetTitle>
                         </SheetHeader>
                         <NavContent />
@@ -134,7 +134,7 @@ function RootLayout() {
                 <div className="p-4 border-b">
                     <h1 className="flex items-center gap-2 text-xl font-bold">
                         <Server className="w-6 h-6 text-primary" />
-                        FRP GUI
+                        FRPC GUI
                     </h1>
                 </div>
                 <NavContent />

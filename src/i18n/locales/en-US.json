@@ -228,7 +228,7 @@
         "allLogs": "All Logs",
         "noLogs": "No logs",
         "clear": "Clear",
-        "appStarted": "FRP GUI started",
+        "appStarted": "FRPC GUI started",
         "waitingConfig": "Waiting for configuration..."
     },
     "settings": {
@@ -262,7 +262,7 @@
         "languageDesc": "Select interface language"
     },
     "about": {
-        "title": "FRP GUI",
+        "title": "FRPC GUI",
         "description": "Cross-platform FRP Client Management Tool",
         "version": "Version {{version}}",
         "techStack": "Built with Electron + React + TypeScript",
@@ -270,7 +270,7 @@
         "referenceProject": "Reference Project frpmgr",
         "thanks": "This project is based on frpmgr",
         "thanksContributors": "Thanks to all open source contributors",
-        "license": "© 2024 FRP GUI. MIT License"
+        "license": "© 2024 FRPC GUI. MIT License"
     },
     "frpcSetup": {
         "title": "Configure FRPC",

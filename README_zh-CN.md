@@ -1,4 +1,4 @@
-# FRP GUI
+# FRPC GUI
 
 <div align="center">
 
@@ -70,7 +70,7 @@ pnpm electron:build
 
 ## 使用方法
 
-1. **启动应用程序**：安装后打开 FRP GUI
+1. **启动应用程序**：安装后打开 FRPC GUI
 2. **配置服务器**：在设置中添加你的 FRP 服务器地址和端口
 3. **导入配置**：导入现有的 `frpc.toml` 配置文件
 4. **启动隧道**：从仪表盘启用和管理隧道

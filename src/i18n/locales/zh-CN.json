@@ -228,7 +228,7 @@
         "allLogs": "全部日志",
         "noLogs": "暂无日志",
         "clear": "清空",
-        "appStarted": "FRP GUI 已启动",
+        "appStarted": "FRPC GUI 已启动",
         "waitingConfig": "等待配置..."
     },
     "settings": {
@@ -262,7 +262,7 @@
         "languageDesc": "选择界面语言"
     },
     "about": {
-        "title": "FRP GUI",
+        "title": "FRPC GUI",
         "description": "跨平台 FRP 客户端管理工具",
         "version": "版本 {{version}}",
         "techStack": "基于 Electron + React + TypeScript",
@@ -270,7 +270,7 @@
         "referenceProject": "参考项目 frpmgr",
         "thanks": "本项目参考 frpmgr 实现",
         "thanksContributors": "感谢所有开源项目的贡献者",
-        "license": "© 2024 FRP GUI. MIT License"
+        "license": "© 2024 FRPC GUI. MIT License"
     },
     "frpcSetup": {
         "title": "配置 FRPC",
