@@ -1,0 +1,63 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'feat'
+      - 'feature'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
+  - title: '📝 Documentation'
+    labels:
+      - 'docs'
+      - 'documentation'
+  - title: '🎨 UI/UX'
+    labels:
+      - 'style'
+  - title: '♻️ Refactoring'
+    labels:
+      - 'refactor'
+  - title: '⚡ Performance'
+    labels:
+      - 'perf'
+      - 'performance'
+  - title: '✨ Tests'
+    labels:
+      - 'test'
+      - 'testing'
+  - title: '🔧 Build'
+    labels:
+      - 'build'
+  - title: '👷 CI/CD'
+    labels:
+      - 'ci'
+  - title: '🔨 Chore'
+    labels:
+      - 'chore'
+      - 'dependencies'
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking'
+  minor:
+    labels:
+      - 'minor'
+      - 'feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'chore'
+  default: patch
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  ---
+  **Full Changelog**: https://github.com/hidumou/frpc-gui/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

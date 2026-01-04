@@ -37,13 +37,13 @@ jobs:
 
       - name: Build and release (Windows)
         if: matrix.os == 'windows-latest'
-        run: pnpm electron:build
+        run: pnpm electron:build --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and release (macOS)
         if: matrix.os == 'macos-latest'
-        run: pnpm electron:build
+        run: pnpm electron:build --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -65,7 +65,7 @@ jobs:
             release/*.dmg
             release/*.zip
 
-  release:
+  upload-release:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
@@ -82,14 +82,11 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R artifacts
 
-      - name: Create Release
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
             artifacts/windows-build/*.*
             artifacts/macos-build/*.*
-          draft: false
-          prerelease: false
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
