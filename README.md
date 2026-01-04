@@ -47,7 +47,7 @@ View real-time logs from your FRP client
 
 ### Download Pre-built Binaries
 
-You can download the latest release from the [Releases](https://github.com/hidumou/frp-gui/releases) page.
+You can download the latest release from the [Releases](https://github.com/hidumou/frpc-gui/releases) page.
 
 - **macOS**: Download `.dmg` or `.zip` file
 - **Windows**: Download `.exe` installer or `.zip` archive
@@ -56,7 +56,7 @@ You can download the latest release from the [Releases](https://github.com/hidum
 
 ```bash
 # Clone the repository
-git clone https://github.com/hidumou/frp-gui.git
+git clone https://github.com/hidumou/frpc-gui.git
 cd frp-gui
 
 # Install dependencies
@@ -114,7 +114,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Support
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/hidumou/frp-gui/issues) on GitHub.
+If you encounter any issues or have questions, please [open an issue](https://github.com/hidumou/frpc-gui/issues) on GitHub.
 
 ## Acknowledgments
 

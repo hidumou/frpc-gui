@@ -47,7 +47,7 @@
 
 ### 下载预编译二进制文件
 
-你可以从 [发布](https://github.com/hidumou/frp-gui/releases) 页面下载最新版本。
+你可以从 [发布](https://github.com/hidumou/frpc-gui/releases) 页面下载最新版本。
 
 - **macOS**：下载 `.dmg` 或 `.zip` 文件
 - **Windows**：下载 `.exe` 安装程序或 `.zip` 压缩包
@@ -56,7 +56,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/hidumou/frp-gui.git
+git clone https://github.com/hidumou/frpc-gui.git
 cd frp-gui
 
 # 安装依赖
@@ -114,7 +114,7 @@ MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
 
 ## 支持
 
-如果你遇到任何问题或有疑问，请在 GitHub 上 [提交 issue](https://github.com/hidumou/frp-gui/issues)。
+如果你遇到任何问题或有疑问，请在 GitHub 上 [提交 issue](https://github.com/hidumou/frpc-gui/issues)。
 
 ## 致谢
 
