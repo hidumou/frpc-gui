@@ -72,10 +72,18 @@
     ],
     "mac": {
       "target": [
-        "dmg",
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
         "zip"
       ],
-      "icon": "public/icon.icns"
+      "icon": "public/icon.icns",
+      "type": "distribution",
+      "gatekeeperAssess": false,
+      "extendInfo": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "win": {
       "target": [

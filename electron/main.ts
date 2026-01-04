@@ -11,6 +11,7 @@ app.disableHardwareAcceleration()
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
+let isQuitting = false
 const configStore = new ConfigStore()
 const frpcManager = new FrpcManager(configStore)
 
@@ -59,9 +60,9 @@ function createWindow() {
     mainWindow = null
   })
 
-  // 最小化到托盘
+  // 最小化到托盘（仅在非退出状态时）
   mainWindow.on('close', (event) => {
-    if (process.platform === 'darwin') {
+    if (process.platform === 'darwin' && !isQuitting) {
       event.preventDefault()
       mainWindow?.hide()
     }
@@ -89,6 +90,7 @@ function createTray() {
     {
       label: '退出',
       click: () => {
+        isQuitting = true
         frpcManager.stopAll()
         app.quit()
       },
@@ -268,11 +270,13 @@ function verifyFrpcPath(frpcPath: string): { valid: boolean; version?: string; e
       return { valid: false, error: 'File not found' }
     }
 
-    // Try to execute frpc -v
+    // Try to execute frpc -v with extended PATH
+    const extendedPath = getSystemPath()
     const output = execSync(`"${frpcPath}" -v`, {
       timeout: 5000,
       encoding: 'utf-8',
       windowsHide: true,
+      env: { ...process.env, PATH: extendedPath },
     })
 
     // Parse version from output (e.g., "frpc version 0.52.3")
@@ -281,8 +285,54 @@ function verifyFrpcPath(frpcPath: string): { valid: boolean; version?: string; e
 
     return { valid: true, version }
   } catch (error) {
-    return { valid: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
+    // Provide more helpful error messages
+    if (errorMessage.includes('cannot execute binary file') || errorMessage.includes('Exec format error')) {
+      const platform = os.platform()
+      const arch = os.arch()
+      const platformName = platform === 'darwin' ? 'macOS' : platform === 'win32' ? 'Windows' : 'Linux'
+      const archName = arch === 'arm64' ? 'ARM64 (Apple Silicon)' : arch === 'x64' ? 'x64' : arch
+      return {
+        valid: false,
+        error: `Binary architecture mismatch. Your system is ${platformName} ${archName}. Please download the correct version of frpc for your platform.`
+      }
+    }
+
+    if (errorMessage.includes('EACCES') || errorMessage.includes('permission denied')) {
+      return { valid: false, error: 'Permission denied. Please make sure the file is executable (chmod +x frpc).' }
+    }
+
+    return { valid: false, error: errorMessage }
   }
+}
+
+function getSystemPath(): string {
+  // On macOS, GUI apps don't inherit shell PATH, so we need to construct it
+  const platform = os.platform()
+  const defaultPath = process.env.PATH || ''
+
+  if (platform === 'darwin') {
+    // Common paths on macOS where binaries might be installed
+    const commonPaths = [
+      '/usr/local/bin',
+      '/opt/homebrew/bin',      // Homebrew on Apple Silicon
+      '/opt/local/bin',         // MacPorts
+      '/usr/bin',
+      '/bin',
+      '/usr/sbin',
+      '/sbin',
+      path.join(os.homedir(), '.local', 'bin'),
+      path.join(os.homedir(), 'bin'),
+    ]
+
+    // Merge with existing PATH, avoiding duplicates
+    const existingPaths = defaultPath.split(':').filter(Boolean)
+    const allPaths = [...new Set([...commonPaths, ...existingPaths])]
+    return allPaths.join(':')
+  }
+
+  return defaultPath
 }
 
 function checkFrpcAvailable(): { available: boolean; version?: string; path?: string; error?: string } {
@@ -318,18 +368,78 @@ function checkFrpcAvailable(): { available: boolean; version?: string; path?: st
     }
   }
 
-  // Try system PATH
+  // Try system PATH with extended paths for macOS
+  const extendedPath = getSystemPath()
+
+  // First, try to find frpc using 'which' command with extended PATH
+  if (platform !== 'win32') {
+    try {
+      const whichOutput = execSync(`which ${binaryName}`, {
+        timeout: 5000,
+        encoding: 'utf-8',
+        env: { ...process.env, PATH: extendedPath },
+      }).trim()
+
+      if (whichOutput && fs.existsSync(whichOutput)) {
+        const result = verifyFrpcPathWithEnv(whichOutput, extendedPath)
+        if (result.valid) {
+          return { available: true, version: result.version, path: whichOutput }
+        }
+      }
+    } catch {
+      // which command failed, try direct execution
+    }
+  }
+
+  // Try direct execution with extended PATH
   try {
     const output = execSync(`${binaryName} -v`, {
       timeout: 5000,
       encoding: 'utf-8',
       windowsHide: true,
+      env: { ...process.env, PATH: extendedPath },
     })
     const versionMatch = output.match(/frpc version (\d+\.\d+\.\d+)/i) || output.match(/(\d+\.\d+\.\d+)/)
     const version = versionMatch ? versionMatch[1] : output.trim()
+
+    // Try to get absolute path
+    if (platform !== 'win32') {
+      try {
+        const absPath = execSync(`which ${binaryName}`, {
+          timeout: 5000,
+          encoding: 'utf-8',
+          env: { ...process.env, PATH: extendedPath },
+        }).trim()
+        return { available: true, version, path: absPath }
+      } catch {
+        return { available: true, version, path: binaryName }
+      }
+    }
     return { available: true, version, path: binaryName }
   } catch {
     return { available: false, error: 'frpc not found in PATH' }
+  }
+}
+
+function verifyFrpcPathWithEnv(frpcPath: string, envPath: string): { valid: boolean; version?: string; error?: string } {
+  try {
+    if (!fs.existsSync(frpcPath)) {
+      return { valid: false, error: 'File not found' }
+    }
+
+    const output = execSync(`"${frpcPath}" -v`, {
+      timeout: 5000,
+      encoding: 'utf-8',
+      windowsHide: true,
+      env: { ...process.env, PATH: envPath },
+    })
+
+    const versionMatch = output.match(/frpc version (\d+\.\d+\.\d+)/i) || output.match(/(\d+\.\d+\.\d+)/)
+    const version = versionMatch ? versionMatch[1] : output.trim()
+
+    return { valid: true, version }
+  } catch (error) {
+    return { valid: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
@@ -361,5 +471,6 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  isQuitting = true
   frpcManager.stopAll()
 })
