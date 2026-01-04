@@ -74,19 +74,36 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         },
-        "zip"
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "icon": "public/icon.icns",
+      "category": "public.app-category.utilities",
       "type": "distribution",
       "gatekeeperAssess": false,
-      "hardenedRuntime": false,
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
       "extendInfo": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSDocumentsFolderUsageDescription": "This app needs access to the Documents folder to manage configuration files.",
         "NSDownloadsFolderUsageDescription": "This app needs access to the Downloads folder to manage configuration files."
-      }
+      },
+      "artifactName": "${productName}_mac_${arch}_${version}.${ext}"
+    },
+    "dmg": {
+      "sign": false,
+      "artifactName": "${productName}_mac_${arch}_${version}.${ext}"
     },
     "win": {
       "target": [

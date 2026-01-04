@@ -52,6 +52,20 @@ You can download the latest release from the [Releases](https://github.com/hidum
 - **macOS**: Download `.dmg` or `.zip` file
 - **Windows**: Download `.exe` installer or `.zip` archive
 
+#### macOS Gatekeeper Notice
+
+Since the application is not signed with an Apple Developer certificate, macOS may show a warning that the app is "damaged" or "can't be opened". To fix this, run the following command in Terminal after installation:
+
+```bash
+# For .app installed from DMG
+sudo xattr -rd com.apple.quarantine /Applications/FRPC\ GUI.app
+
+# Or for the app extracted from ZIP (adjust the path as needed)
+sudo xattr -rd com.apple.quarantine /path/to/FRPC\ GUI.app
+```
+
+Alternatively, you can build from source to avoid this issue.
+
 ### Build from Source
 
 ```bash

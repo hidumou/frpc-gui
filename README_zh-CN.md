@@ -52,6 +52,20 @@
 - **macOS**：下载 `.dmg` 或 `.zip` 文件
 - **Windows**：下载 `.exe` 安装程序或 `.zip` 压缩包
 
+#### macOS 安全提示
+
+由于应用未使用 Apple 开发者证书签名，macOS 可能会提示应用"已损坏"或"无法打开"。要解决此问题，请在安装后打开终端运行以下命令：
+
+```bash
+# 对于从 DMG 安装的 .app
+sudo xattr -rd com.apple.quarantine /Applications/FRPC\ GUI.app
+
+# 或者对于从 ZIP 解压的应用（请根据实际路径调整）
+sudo xattr -rd com.apple.quarantine /path/to/FRPC\ GUI.app
+```
+
+或者，你也可以从源代码构建以避免此问题。
+
 ### 从源代码构建
 
 ```bash
