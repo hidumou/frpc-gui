@@ -90,15 +90,15 @@
       "icon": "public/icon.icns",
       "category": "public.app-category.utilities",
       "type": "distribution",
+      "identity": null,
+      "hardenedRuntime": false,
       "gatekeeperAssess": false,
-      "hardenedRuntime": true,
-      "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist",
+      "entitlements": "electron/build/entitlements.mac.plist",
+      "entitlementsInherit": "electron/build/entitlements.mac.plist",
       "extendInfo": {
-        "ITSAppUsesNonExemptEncryption": false,
-        "NSDocumentsFolderUsageDescription": "This app needs access to the Documents folder to manage configuration files.",
-        "NSDownloadsFolderUsageDescription": "This app needs access to the Downloads folder to manage configuration files."
+        "ITSAppUsesNonExemptEncryption": false
       },
+      "notarize": false,
       "artifactName": "${productName}_mac_${arch}_${version}.${ext}"
     },
     "dmg": {
