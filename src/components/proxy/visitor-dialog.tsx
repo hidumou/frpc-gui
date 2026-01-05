@@ -135,12 +135,7 @@ export function VisitorDialog({ open, onOpenChange, visitor, onSave }: VisitorDi
         onSave(formDataToVisitor(data))
     }
 
-    const handleFormSubmit = handleSubmit(onSubmit, (fieldErrors) => {
-        const firstError = Object.values(fieldErrors)[0] as { message?: string } | undefined
-        if (firstError?.message) {
-            toast.error(t(firstError.message))
-        }
-    })
+    const handleFormSubmit = handleSubmit(onSubmit)
 
     const isXTCP = watchType === 'xtcp'
 

@@ -235,12 +235,7 @@ export function ProxyDialog({ open, onOpenChange, proxy, onSave }: ProxyDialogPr
         onSave(formDataToProxy(data))
     }
 
-    const handleFormSubmit = handleSubmit(onSubmit, (fieldErrors) => {
-        const firstError = Object.values(fieldErrors)[0] as { message?: string } | undefined
-        if (firstError?.message) {
-            toast.error(t(firstError.message))
-        }
-    })
+    const handleFormSubmit = handleSubmit(onSubmit)
 
     const isP2PType = ['stcp', 'xtcp', 'sudp'].includes(watchType)
     const isHttpType = ['http', 'https', 'tcpmux'].includes(watchType)
