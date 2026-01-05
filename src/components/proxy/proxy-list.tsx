@@ -39,21 +39,21 @@ export function ProxyList({ proxies, proxyStatuses, onEdit, onDelete }: ProxyLis
 
     const getStatusBadge = (proxy: Proxy) => {
         if (proxy.disabled) {
-            return <Badge variant="secondary">{t('common.disabled')}</Badge>
+            return <StatusBadge status="stopped" label={t('common.disabled')} />
         }
 
         const status = getProxyStatus(proxy.name)
         if (!status) {
-            return <Badge variant="secondary">{t('common.unknown')}</Badge>
+            return <StatusBadge status="unknown" label={t('common.unknown')} />
         }
 
         switch (status.status) {
             case ProxyState.Running:
-                return <Badge variant="success">{t('status.running')}</Badge>
+                return <StatusBadge status="running" label={t('status.running')} />
             case ProxyState.Error:
-                return <Badge variant="destructive">{t('status.error')}</Badge>
+                return <StatusBadge status="error" label={t('status.error')} />
             default:
-                return <Badge variant="secondary">{t('common.unknown')}</Badge>
+                return <StatusBadge status="unknown" label={t('common.unknown')} />
         }
     }
 

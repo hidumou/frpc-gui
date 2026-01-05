@@ -3,18 +3,18 @@ import { useTranslation } from 'react-i18next'
 import { Play, Square, RefreshCw, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useConfigStore } from '@/stores/config-store'
 import { ProxyList } from '../proxy/proxy-list'
 import { VisitorList } from '../proxy/visitor-list'
 import { ProxyDialog } from '../proxy/proxy-dialog'
-import { ConfigState, type Proxy as ProxyType } from '@/types'
-import { useToast } from '@/components/ui/use-toast'
+import { VisitorDialog } from '../proxy/visitor-dialog'
+import { ConfigState, type Proxy as ProxyType, type Visitor } from '@/types'
+import { toast } from 'sonner'
 
 export function ConfigDetail() {
     const { t } = useTranslation()
-    const { toast } = useToast()
     const {
         getSelectedConfig,
         configStates,
@@ -29,6 +29,8 @@ export function ConfigDetail() {
     const config = getSelectedConfig()
     const [showProxyDialog, setShowProxyDialog] = useState(false)
     const [editProxy, setEditProxy] = useState<ProxyType | null>(null)
+    const [showVisitorDialog, setShowVisitorDialog] = useState(false)
+    const [editVisitor, setEditVisitor] = useState<Visitor | null>(null)
     const [activeTab, setActiveTab] = useState<'proxies' | 'visitors' | 'settings'>('proxies')
 
     if (!config) {
@@ -46,49 +48,57 @@ export function ConfigDetail() {
     const getStateInfo = () => {
         switch (state) {
             case ConfigState.Started:
-                return { label: t('status.running'), variant: 'success' as const }
+                return { status: 'running' as const, label: t('status.running') }
             case ConfigState.Starting:
-                return { label: t('status.starting'), variant: 'warning' as const }
+                return { status: 'starting' as const, label: t('status.starting') }
             case ConfigState.Stopping:
-                return { label: t('status.stopping'), variant: 'warning' as const }
+                return { status: 'stopping' as const, label: t('status.stopping') }
             default:
-                return { label: t('status.stopped'), variant: 'secondary' as const }
+                return { status: 'stopped' as const, label: t('status.stopped') }
         }
     }
 
     const handleStart = async () => {
         try {
             await startConfig(config.id)
-            toast({ title: t('config.configStarted') })
+            toast.success(t('config.configStarted'))
         } catch (error) {
-            toast({ title: t('config.startFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.startFailed'), {
+                description: String(error)
+            })
         }
     }
 
     const handleStop = async () => {
         try {
             await stopConfig(config.id)
-            toast({ title: t('config.configStopped') })
+            toast.success(t('config.configStopped'))
         } catch (error) {
-            toast({ title: t('config.stopFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.stopFailed'), {
+                description: String(error)
+            })
         }
     }
 
     const handleRestart = async () => {
         try {
             await restartConfig(config.id)
-            toast({ title: t('config.configRestarted') })
+            toast.success(t('config.configRestarted'))
         } catch (error) {
-            toast({ title: t('config.restartFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.restartFailed'), {
+                description: String(error)
+            })
         }
     }
 
     const handleReload = async () => {
         try {
             await reloadConfig(config.id)
-            toast({ title: t('config.configReloaded') })
+            toast.success(t('config.configReloaded'))
         } catch (error) {
-            toast({ title: t('config.reloadFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.reloadFailed'), {
+                description: String(error)
+            })
         }
     }
 
@@ -103,7 +113,7 @@ export function ConfigDetail() {
                 proxies: updatedProxies,
             })
 
-            toast({ title: editProxy ? t('proxy.proxyUpdated') : t('proxy.proxyAdded') })
+            toast.success(editProxy ? t('proxy.proxyUpdated') : t('proxy.proxyAdded'))
             setShowProxyDialog(false)
             setEditProxy(null)
 
@@ -112,7 +122,9 @@ export function ConfigDetail() {
                 await handleReload()
             }
         } catch (error) {
-            toast({ title: t('config.saveFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.saveFailed'), {
+                description: String(error)
+            })
         }
     }
 
@@ -122,20 +134,72 @@ export function ConfigDetail() {
                 ...config,
                 proxies: config.proxies.filter((p) => p.name !== proxyName),
             })
-            toast({ title: t('proxy.proxyDeleted') })
+            toast.success(t('proxy.proxyDeleted'))
 
             // If running, reload config
             if (isRunning) {
                 await handleReload()
             }
         } catch (error) {
-            toast({ title: t('config.deleteFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.deleteFailed'), {
+                description: String(error)
+            })
         }
     }
 
     const handleEditProxy = (proxy: ProxyType) => {
         setEditProxy(proxy)
         setShowProxyDialog(true)
+    }
+
+    const handleSaveVisitor = async (visitor: Visitor) => {
+        try {
+            const updatedVisitors = editVisitor
+                ? (config.visitors || []).map((v) => (v.name === editVisitor.name ? visitor : v))
+                : [...(config.visitors || []), visitor]
+
+            await updateConfig({
+                ...config,
+                visitors: updatedVisitors,
+            })
+
+            toast.success(editVisitor ? t('visitor.visitorUpdated') : t('visitor.visitorAdded'))
+            setShowVisitorDialog(false)
+            setEditVisitor(null)
+
+            // If running, reload config
+            if (isRunning) {
+                await handleReload()
+            }
+        } catch (error) {
+            toast.error(t('config.saveFailed'), {
+                description: String(error)
+            })
+        }
+    }
+
+    const handleDeleteVisitor = async (visitorName: string) => {
+        try {
+            await updateConfig({
+                ...config,
+                visitors: (config.visitors || []).filter((v) => v.name !== visitorName),
+            })
+            toast.success(t('visitor.visitorDeleted'))
+
+            // If running, reload config
+            if (isRunning) {
+                await handleReload()
+            }
+        } catch (error) {
+            toast.error(t('config.deleteFailed'), {
+                description: String(error)
+            })
+        }
+    }
+
+    const handleEditVisitor = (visitor: Visitor) => {
+        setEditVisitor(visitor)
+        setShowVisitorDialog(true)
     }
 
     const stateInfo = getStateInfo()
@@ -146,7 +210,7 @@ export function ConfigDetail() {
             <div className="flex items-center justify-between p-4 border-b shrink-0">
                 <div className="flex items-center gap-3">
                     <h2 className="text-lg font-semibold">{config.name}</h2>
-                    <Badge variant={stateInfo.variant}>{stateInfo.label}</Badge>
+                    <StatusBadge status={stateInfo.status} label={stateInfo.label} />
                 </div>
                 <div className="flex items-center gap-2">
                     {isRunning ? (
@@ -232,10 +296,22 @@ export function ConfigDetail() {
                         <span className="text-sm text-muted-foreground">
                             {t('visitor.manageVisitorRules')}
                         </span>
+                        <Button
+                            size="sm"
+                            onClick={() => {
+                                setEditVisitor(null)
+                                setShowVisitorDialog(true)
+                            }}
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            {t('visitor.addVisitor')}
+                        </Button>
                     </div>
                     <ScrollArea className="flex-1">
                         <VisitorList
                             visitors={config.visitors || []}
+                            onEdit={handleEditVisitor}
+                            onDelete={handleDeleteVisitor}
                         />
                     </ScrollArea>
                 </TabsContent>
@@ -264,6 +340,14 @@ export function ConfigDetail() {
                 onOpenChange={setShowProxyDialog}
                 proxy={editProxy}
                 onSave={handleSaveProxy}
+            />
+
+            {/* Visitor Dialog */}
+            <VisitorDialog
+                open={showVisitorDialog}
+                onOpenChange={setShowVisitorDialog}
+                visitor={editVisitor}
+                onSave={handleSaveVisitor}
             />
         </div>
     )

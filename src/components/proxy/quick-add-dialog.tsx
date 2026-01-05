@@ -48,7 +48,6 @@ const defaultPorts: Record<QuickAddType, { local: number; remote?: number; type:
 }
 
 export function QuickAddDialog({ open, onOpenChange, onSave }: QuickAddDialogProps) {
-    const { toast } = useToast()
     const [selectedType, setSelectedType] = useState<QuickAddType | null>(null)
     const [name, setName] = useState('')
     const [localPort, setLocalPort] = useState(8080)

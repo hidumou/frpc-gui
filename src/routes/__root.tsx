@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, createRootRoute, Link, useLocation } from '@tanstack/react-router'
 import { Server, FileText, Settings, Info, Menu, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from '@/components/ui/sonner'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {

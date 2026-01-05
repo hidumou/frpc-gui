@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Plus, Play, Square, MoreVertical, FileUp, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -26,11 +26,10 @@ import { ConfigDialog } from './config-dialog'
 import { ImportDialog } from './import-dialog'
 import { ConfigState, type ClientConfig } from '@/types'
 import { cn } from '@/lib/utils'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 
 export function ConfigList() {
     const { t } = useTranslation()
-    const { toast } = useToast()
     const {
         configs,
         selectedConfigId,
@@ -50,13 +49,13 @@ export function ConfigList() {
         const state = configStates.get(id) || ConfigState.Stopped
         switch (state) {
             case ConfigState.Started:
-                return { label: t('status.running'), variant: 'success' as const }
+                return { status: 'running' as const, label: t('status.running') }
             case ConfigState.Starting:
-                return { label: t('status.starting'), variant: 'warning' as const }
+                return { status: 'starting' as const, label: t('status.starting') }
             case ConfigState.Stopping:
-                return { label: t('status.stopping'), variant: 'warning' as const }
+                return { status: 'stopping' as const, label: t('status.stopping') }
             default:
-                return { label: t('status.stopped'), variant: 'secondary' as const }
+                return { status: 'stopped' as const, label: t('status.stopped') }
         }
     }
 
@@ -64,9 +63,11 @@ export function ConfigList() {
         e.stopPropagation()
         try {
             await startConfig(id)
-            toast({ title: t('config.configStarted') })
+            toast.success(t('config.configStarted'))
         } catch (error) {
-            toast({ title: t('config.startFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.startFailed'), {
+                description: String(error)
+            })
         }
     }
 
@@ -74,9 +75,11 @@ export function ConfigList() {
         e.stopPropagation()
         try {
             await stopConfig(id)
-            toast({ title: t('config.configStopped') })
+            toast.success(t('config.configStopped'))
         } catch (error) {
-            toast({ title: t('config.stopFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.stopFailed'), {
+                description: String(error)
+            })
         }
     }
 
@@ -84,10 +87,12 @@ export function ConfigList() {
         if (!deleteId) return
         try {
             await deleteConfig(deleteId)
-            toast({ title: t('config.configDeleted') })
+            toast.success(t('config.configDeleted'))
             setDeleteId(null)
         } catch (error) {
-            toast({ title: t('config.deleteFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.deleteFailed'), {
+                description: String(error)
+            })
         }
     }
 
@@ -164,9 +169,7 @@ export function ConfigList() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
                                             <span className="font-medium truncate">{config.name}</span>
-                                            <Badge variant={stateInfo.variant} className="text-xs">
-                                                {stateInfo.label}
-                                            </Badge>
+                                            <StatusBadge status={stateInfo.status} label={stateInfo.label} className="text-xs" />
                                         </div>
                                         <p className="text-xs text-muted-foreground truncate">
                                             {config.common.serverAddr}:{config.common.serverPort}

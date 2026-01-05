@@ -9,13 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FolderOpen, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 import { LogLevels, Protocols, type AppConfig, type Protocol } from '@/types'
 import { languages } from '@/i18n'
 
 function SettingsPage() {
     const { t, i18n } = useTranslation()
-    const { toast } = useToast()
     const [appPaths, setAppPaths] = useState({ userData: '', logs: '', temp: '' })
     const [frpcPath, setFrpcPath] = useState('')
     const [frpcVersion, setFrpcVersion] = useState<string | null>(null)
@@ -57,19 +56,19 @@ function SettingsPage() {
 
     const handleSelectFrpcPath = async () => {
         const platform = await window.electronAPI.system.getPlatform()
-        
+
         // Build filters based on platform
         const filters: { name: string; extensions: string[] }[] = []
         if (platform === 'win32') {
             filters.push({ name: t('frpcSetup.executable'), extensions: ['exe'] })
         }
         // For macOS and Linux, we don't add filters because executables don't have extensions
-        
+
         const filePath = await window.electronAPI.system.selectFile({
             title: t('settings.selectFrpc'),
             filters: filters.length > 0 ? filters : undefined,
         })
-        
+
         if (filePath) {
             setFrpcPath(filePath)
             // Verify the selected path
@@ -82,13 +81,13 @@ function SettingsPage() {
                     const success = await window.electronAPI.frpc.setPath(filePath)
                     if (success) {
                         setFrpcVersion(result.version || null)
-                        toast({ title: t('settings.frpcPathSelected'), description: `${filePath} (v${result.version})` })
+                        toast.success(t('settings.frpcPathSelected'), {
+                            description: `${filePath} (v${result.version})`
+                        })
                     }
                 } else {
-                    toast({ 
-                        title: t('common.error'), 
-                        description: result.error,
-                        variant: 'destructive'
+                    toast.error(t('common.error'), {
+                        description: result.error
                     })
                 }
             } finally {
@@ -103,7 +102,7 @@ function SettingsPage() {
     }
 
     const handleSave = () => {
-        toast({ title: t('settings.saved') })
+        toast.success(t('settings.saved'))
     }
 
     return (
@@ -164,10 +163,10 @@ function SettingsPage() {
                     <div className="space-y-2">
                         <Label>{t('settings.frpcPath')}</Label>
                         <div className="flex gap-2">
-                            <Input 
-                                value={frpcPath} 
-                                placeholder={t('settings.frpcPathPlaceholder')} 
-                                readOnly 
+                            <Input
+                                value={frpcPath}
+                                placeholder={t('settings.frpcPathPlaceholder')}
+                                readOnly
                             />
                             <Button variant="outline" onClick={handleSelectFrpcPath} disabled={verifying}>
                                 {verifying ? (

@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useConfigStore } from '@/stores/config-store'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 import { FileUp, Clipboard } from 'lucide-react'
 
 interface ImportDialogProps {
@@ -24,7 +24,6 @@ interface ImportDialogProps {
 
 export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     const { t } = useTranslation()
-    const { toast } = useToast()
     const { importConfig, loadConfigs } = useConfigStore()
 
     const [filePath, setFilePath] = useState('')
@@ -46,18 +45,20 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
 
     const handleImportFromFile = async () => {
         if (!filePath) {
-            toast({ title: t('import.pleaseSelectFile'), variant: 'destructive' })
+            toast.error(t('import.pleaseSelectFile'))
             return
         }
 
         setIsImporting(true)
         try {
             await importConfig(filePath)
-            toast({ title: t('config.importSuccess') })
+            toast.success(t('config.importSuccess'))
             onOpenChange(false)
             setFilePath('')
         } catch (error) {
-            toast({ title: t('config.importFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.importFailed'), {
+                description: String(error)
+            })
         } finally {
             setIsImporting(false)
         }
@@ -68,13 +69,13 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
             const text = await navigator.clipboard.readText()
             setClipboardContent(text)
         } catch (error) {
-            toast({ title: t('import.cannotReadClipboard'), variant: 'destructive' })
+            toast.error(t('import.cannotReadClipboard'))
         }
     }
 
     const handleImportFromClipboard = async () => {
         if (!clipboardContent) {
-            toast({ title: t('import.pleaseEnterContent'), variant: 'destructive' })
+            toast.error(t('import.pleaseEnterContent'))
             return
         }
 
@@ -82,11 +83,13 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
         try {
             await window.electronAPI.config.importText(clipboardContent)
             await loadConfigs()
-            toast({ title: t('config.importSuccess') })
+            toast.success(t('config.importSuccess'))
             onOpenChange(false)
             setClipboardContent('')
         } catch (error) {
-            toast({ title: t('config.importFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.importFailed'), {
+                description: String(error)
+            })
         } finally {
             setIsImporting(false)
         }

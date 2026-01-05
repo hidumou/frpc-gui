@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useConfigStore } from '@/stores/config-store'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 import { Protocols, AuthMethods, LogLevels, type ClientConfig, type ClientCommon } from '@/types'
 import { generateId } from '@/lib/utils'
 
@@ -38,7 +38,6 @@ const defaultCommon: ClientCommon = {
 
 export function ConfigDialog({ open, onOpenChange, config }: ConfigDialogProps) {
     const { t } = useTranslation()
-    const { toast } = useToast()
     const { addConfig, updateConfig } = useConfigStore()
 
     const [name, setName] = useState('')
@@ -65,11 +64,11 @@ export function ConfigDialog({ open, onOpenChange, config }: ConfigDialogProps) 
 
     const handleSave = async () => {
         if (!name.trim()) {
-            toast({ title: t('config.pleaseEnterName'), variant: 'destructive' })
+            toast.error(t('config.pleaseEnterName'))
             return
         }
         if (!common.serverAddr.trim()) {
-            toast({ title: t('config.pleaseEnterServerAddr'), variant: 'destructive' })
+            toast.error(t('config.pleaseEnterServerAddr'))
             return
         }
 
@@ -92,15 +91,17 @@ export function ConfigDialog({ open, onOpenChange, config }: ConfigDialogProps) 
 
             if (config) {
                 await updateConfig(configData)
-                toast({ title: t('config.configUpdated') })
+                toast.success(t('config.configUpdated'))
             } else {
                 await addConfig(configData)
-                toast({ title: t('config.configAdded') })
+                toast.success(t('config.configAdded'))
             }
 
             onOpenChange(false)
         } catch (error) {
-            toast({ title: t('config.saveFailed'), description: String(error), variant: 'destructive' })
+            toast.error(t('config.saveFailed'), {
+                description: String(error)
+            })
         }
     }
 
