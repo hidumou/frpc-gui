@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Play, Square, RefreshCw, Plus } from 'lucide-react'
+import { Play, Square, RefreshCw, Plus, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatusBadge } from '@/components/ui/status-badge'
@@ -10,7 +10,9 @@ import { ProxyList } from '../proxy/proxy-list'
 import { VisitorList } from '../proxy/visitor-list'
 import { ProxyDialog } from '../proxy/proxy-dialog'
 import { VisitorDialog } from '../proxy/visitor-dialog'
-import { ConfigState, type Proxy as ProxyType, type Visitor } from '@/types'
+import { TomlEditor } from './toml-editor'
+import { generateTomlFromConfig, parseTomlToConfig, validateToml } from '@/lib/toml-converter'
+import { ConfigState, type Proxy as ProxyType, type Visitor, type ClientConfig } from '@/types'
 import { toast } from 'sonner'
 
 export function ConfigDetail() {
@@ -24,6 +26,7 @@ export function ConfigDetail() {
         restartConfig,
         reloadConfig,
         updateConfig,
+        loadConfigs,
     } = useConfigStore()
 
     const config = getSelectedConfig()
@@ -31,7 +34,31 @@ export function ConfigDetail() {
     const [editProxy, setEditProxy] = useState<ProxyType | null>(null)
     const [showVisitorDialog, setShowVisitorDialog] = useState(false)
     const [editVisitor, setEditVisitor] = useState<Visitor | null>(null)
-    const [activeTab, setActiveTab] = useState<'proxies' | 'visitors' | 'settings'>('proxies')
+    const [activeTab, setActiveTab] = useState<'proxies' | 'visitors' | 'settings' | 'source'>('proxies')
+
+    // Source view state
+    const [tomlContent, setTomlContent] = useState('')
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+    const [tomlError, setTomlError] = useState<string | null>(null)
+    const [isSaving, setIsSaving] = useState(false)
+
+    // Update TOML content when config changes or switching to source view
+    useEffect(() => {
+        if (config && activeTab === 'source') {
+            const toml = generateTomlFromConfig(config)
+            setTomlContent(toml)
+            setHasUnsavedChanges(false)
+        }
+    }, [config, activeTab])
+
+    // Update TOML content when config changes externally
+    useEffect(() => {
+        if (config) {
+            const toml = generateTomlFromConfig(config)
+            setTomlContent(toml)
+            setHasUnsavedChanges(false)
+        }
+    }, [config])
 
     if (!config) {
         return (
@@ -158,6 +185,7 @@ export function ConfigDetail() {
                 ? (config.visitors || []).map((v) => (v.name === editVisitor.name ? visitor : v))
                 : [...(config.visitors || []), visitor]
 
+            // 先保存配置
             await updateConfig({
                 ...config,
                 visitors: updatedVisitors,
@@ -167,8 +195,10 @@ export function ConfigDetail() {
             setShowVisitorDialog(false)
             setEditVisitor(null)
 
-            // If running, reload config
+            // 如果正在运行，等待文件系统同步后再重载
             if (isRunning) {
+                // 添加小延迟确保文件系统同步完成
+                await new Promise(resolve => setTimeout(resolve, 100))
                 await handleReload()
             }
         } catch (error) {
@@ -200,6 +230,68 @@ export function ConfigDetail() {
     const handleEditVisitor = (visitor: Visitor) => {
         setEditVisitor(visitor)
         setShowVisitorDialog(true)
+    }
+
+    // Handle TOML editing
+    const handleTomlChange = (newToml: string) => {
+        setTomlContent(newToml)
+        setHasUnsavedChanges(true)
+    }
+
+    // Handle TOML errors with toast
+    const handleTomlError = (error: string | null) => {
+        setTomlError(error)
+        if (error) {
+            toast.error(t('config.invalidToml'), { description: error })
+        }
+    }
+
+    // Save TOML changes
+    const handleSaveToml = async () => {
+        if (tomlError) {
+            return
+        }
+
+        if (!hasUnsavedChanges) {
+            return
+        }
+
+        setIsSaving(true)
+        try {
+            const validation = validateToml(tomlContent)
+            if (!validation.valid) {
+                toast.error(t('config.invalidToml'), { description: validation.error })
+                return
+            }
+
+            const updatedConfig = parseTomlToConfig(tomlContent, config.id, config.name)
+            await updateConfig(updatedConfig)
+
+            // Reload configs to update the store
+            await loadConfigs()
+
+            setHasUnsavedChanges(false)
+            toast.success(t('config.saved'))
+
+            // Reload frpc if running
+            if (isRunning) {
+                await handleReload()
+            }
+        } catch (error) {
+            toast.error(t('config.parseFailed'), { description: String(error) })
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    // Handle tab change with unsaved changes warning
+    const handleTabChange = (newTab: 'proxies' | 'visitors' | 'settings' | 'source') => {
+        if (activeTab === 'source' && hasUnsavedChanges && newTab !== 'source') {
+            if (!confirm(t('config.unsavedChangesWarning'))) {
+                return
+            }
+        }
+        setActiveTab(newTab)
     }
 
     const stateInfo = getStateInfo()
@@ -252,20 +344,26 @@ export function ConfigDetail() {
             </div>
 
             {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'proxies' | 'visitors' | 'settings')} className="flex flex-col flex-1 min-h-0">
+            <Tabs value={activeTab} onValueChange={(v) => handleTabChange(v as 'proxies' | 'visitors' | 'settings' | 'source')} className="flex flex-col flex-1 min-h-0 pb-3">
                 <div className="px-4 border-b shrink-0">
-                    <TabsList className="grid w-full h-10 grid-cols-3">
-                        <TabsTrigger value="proxies">
-                            {t('proxy.title')} ({config.proxies.length})
+                    <TabsList className="h-10 w-full grid grid-cols-4">
+                        <TabsTrigger value="proxies" className="gap-2">
+                            {t('proxy.title')} <span className="text-muted-foreground">({config.proxies.length})</span>
                         </TabsTrigger>
-                        <TabsTrigger value="visitors">
-                            {t('visitor.title')} ({config.visitors?.length || 0})
+                        <TabsTrigger value="visitors" className="gap-2">
+                            {t('visitor.title')} <span className="text-muted-foreground">({config.visitors?.length || 0})</span>
                         </TabsTrigger>
                         <TabsTrigger value="settings">{t('proxy.configDetails')}</TabsTrigger>
+                        <TabsTrigger value="source" className="gap-2">
+                            {t('config.sourceView')}
+                            {hasUnsavedChanges && (
+                                <span className="w-2 h-2 bg-orange-500 rounded-full" />
+                            )}
+                        </TabsTrigger>
                     </TabsList>
                 </div>
 
-                <TabsContent value="proxies" className="flex-1 mt-0 p-0 flex flex-col min-h-0 data-[state=inactive]:hidden">
+                <TabsContent value="proxies" className="flex-1 mt-0 p-0 flex flex-col min-h-0 data-[state=inactive]:hidden  overflow-hidden">
                     <div className="flex items-center justify-between p-4 border-b shrink-0">
                         <span className="text-sm text-muted-foreground">
                             {t('proxy.manageProxyRules')}
@@ -281,17 +379,17 @@ export function ConfigDetail() {
                             {t('proxy.addProxy')}
                         </Button>
                     </div>
-                    <ScrollArea className="flex-1">
+                    <div className="flex-1 overflow-auto">
                         <ProxyList
                             proxies={config.proxies}
                             proxyStatuses={proxies}
                             onEdit={handleEditProxy}
                             onDelete={handleDeleteProxy}
                         />
-                    </ScrollArea>
+                    </div>
                 </TabsContent>
 
-                <TabsContent value="visitors" className="flex-1 mt-0 p-0 flex flex-col min-h-0 data-[state=inactive]:hidden">
+                <TabsContent value="visitors" className="flex-1 mt-0 p-0 flex flex-col min-h-0 data-[state=inactive]:hidden  overflow-hidden">
                     <div className="flex items-center justify-between p-4 border-b shrink-0">
                         <span className="text-sm text-muted-foreground">
                             {t('visitor.manageVisitorRules')}
@@ -307,30 +405,68 @@ export function ConfigDetail() {
                             {t('visitor.addVisitor')}
                         </Button>
                     </div>
-                    <ScrollArea className="flex-1">
+                    <div className="flex-1 overflow-auto">
                         <VisitorList
                             visitors={config.visitors || []}
                             onEdit={handleEditVisitor}
                             onDelete={handleDeleteVisitor}
                         />
-                    </ScrollArea>
+                    </div>
                 </TabsContent>
 
                 <TabsContent value="settings" className="flex-1 mt-0 p-0 min-h-0 data-[state=inactive]:hidden">
                     <ScrollArea className="h-full p-4">
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <InfoItem label={t('server.serverAddr')} value={config.common.serverAddr} />
-                                <InfoItem label={t('server.serverPort')} value={String(config.common.serverPort)} />
-                                <InfoItem label={t('server.protocol')} value={config.common.protocol || 'tcp'} />
-                                <InfoItem label={t('auth.method')} value={config.common.auth?.method || t('auth.noAuth')} />
-                                <InfoItem label={t('advanced.tcpMux')} value={config.common.tcpMux ? t('common.enabled') : t('common.disabled')} />
-                                <InfoItem label="TLS" value={config.common.tls?.enable ? t('common.enabled') : t('common.disabled')} />
-                                <InfoItem label={t('advanced.heartbeatInterval')} value={`${config.common.heartbeatInterval || 30}s`} />
-                                <InfoItem label={t('advanced.logLevel')} value={config.common.log?.level || 'info'} />
+                        <div className="space-y-6">
+                            {/* Server Configuration */}
+                            <div>
+                                <h3 className="text-sm font-semibold mb-3">{t('server.serverConfig')}</h3>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <InfoItem label={t('server.serverAddr')} value={config.common.serverAddr as string} />
+                                    <InfoItem label={t('server.serverPort')} value={String(config.common.serverPort)} />
+                                    <InfoItem label={t('server.protocol')} value={(config.common.protocol as string) || 'tcp'} />
+                                    <InfoItem label={t('auth.method')} value={(config.common.auth?.method as string) || t('auth.noAuth')} />
+                                    <InfoItem label={t('advanced.tcpMux')} value={config.common.tcpMux ? t('common.enabled') : t('common.disabled')} />
+                                    <InfoItem label="TLS" value={config.common.tls?.enable ? t('common.enabled') : t('common.disabled')} />
+                                    <InfoItem label={t('advanced.heartbeatInterval')} value={`${config.common.heartbeatInterval || 30}s`} />
+                                    <InfoItem label={t('advanced.logLevel')} value={(config.common.log?.level as string) || 'info'} />
+                                </div>
+                            </div>
+
+                            {/* Configuration Summary */}
+                            <div>
+                                <h3 className="text-sm font-semibold mb-3">{t('proxy.configSummary')}</h3>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                    <div>{t('proxy.totalProxies', { count: config.proxies.length })}</div>
+                                    {config.visitors && config.visitors.length > 0 && (
+                                        <div>{t('visitor.totalVisitors', { count: config.visitors.length })}</div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="source" className="flex-1 mt-0 p-0 flex flex-col min-h-0 data-[state=inactive]:hidden overflow-hidden ">
+                    <div className="flex items-center justify-between px-4 py-2 border-b shrink-0 bg-muted/30">
+                        <span className="text-sm text-muted-foreground">
+                            {hasUnsavedChanges ? t('config.unsavedChanges') : t('config.sourceView')}
+                        </span>
+                        <Button
+                            size="sm"
+                            onClick={handleSaveToml}
+                            disabled={!!tomlError || isSaving || !hasUnsavedChanges}
+                        >
+                            <Save className="w-4 h-4 mr-2" />
+                            {isSaving ? t('common.saving') : t('common.save')}
+                        </Button>
+                    </div>
+                    <div className="flex-1 min-h-0 overflow-auto">
+                        <TomlEditor
+                            value={tomlContent}
+                            onChange={handleTomlChange}
+                            onError={handleTomlError}
+                        />
+                    </div>
                 </TabsContent>
             </Tabs>
 

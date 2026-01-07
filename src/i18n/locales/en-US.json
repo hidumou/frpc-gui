@@ -29,7 +29,8 @@
         "failed": "Failed",
         "error": "Error",
         "warning": "Warning",
-        "info": "Info"
+        "info": "Info",
+        "saving": "Saving..."
     },
     "nav": {
         "config": "Config",
@@ -69,14 +70,22 @@
         "importSuccess": "Import successful",
         "importFailed": "Import failed",
         "pleaseEnterName": "Please enter configuration name",
-        "pleaseEnterServerAddr": "Please enter server address"
+        "pleaseEnterServerAddr": "Please enter server address",
+        "saved": "Configuration saved",
+        "invalidToml": "Invalid TOML format",
+        "parseFailed": "Parse failed",
+        "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to leave?",
+        "unsavedChanges": "You have unsaved changes",
+        "formView": "Form View",
+        "sourceView": "Source View"
     },
     "server": {
         "serverAddr": "Server Address",
         "serverAddrPlaceholder": "example.com",
         "serverPort": "Server Port",
         "protocol": "Protocol",
-        "user": "Username"
+        "user": "Username",
+        "serverConfig": "Server Configuration"
     },
     "auth": {
         "title": "Authentication",
@@ -165,7 +174,9 @@
         "pleaseEnterRemotePort": "Please enter remote port",
         "pleaseEnterDomain": "Please enter custom domain or subdomain",
         "manageProxyRules": "Manage proxy rules",
-        "configDetails": "Configuration Details"
+        "configDetails": "Configuration Details",
+        "configSummary": "Configuration Summary",
+        "totalProxies": "{{count}} proxies total"
     },
     "visitor": {
         "title": "Visitors",
@@ -201,7 +212,8 @@
         "disableVisitorDesc": "Temporarily disable this visitor rule",
         "pleaseEnterVisitorName": "Please enter visitor name",
         "pleaseEnterServerName": "Please enter server name",
-        "pleaseEnterBindPort": "Please enter bind port"
+        "pleaseEnterBindPort": "Please enter bind port",
+        "totalVisitors": "{{count}} visitors total"
     },
     "quickAdd": {
         "title": "Quick Add Proxy",

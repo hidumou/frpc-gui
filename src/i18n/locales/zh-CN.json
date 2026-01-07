@@ -29,7 +29,8 @@
         "failed": "失败",
         "error": "错误",
         "warning": "警告",
-        "info": "信息"
+        "info": "信息",
+        "saving": "保存中..."
     },
     "nav": {
         "config": "配置",
@@ -69,14 +70,22 @@
         "importSuccess": "导入成功",
         "importFailed": "导入失败",
         "pleaseEnterName": "请输入配置名称",
-        "pleaseEnterServerAddr": "请输入服务器地址"
+        "pleaseEnterServerAddr": "请输入服务器地址",
+        "saved": "配置已保存",
+        "invalidToml": "TOML 格式错误",
+        "parseFailed": "解析失败",
+        "unsavedChangesWarning": "有未保存的更改，确定要离开吗？",
+        "unsavedChanges": "有未保存的更改",
+        "formView": "表单视图",
+        "sourceView": "源码视图"
     },
     "server": {
         "serverAddr": "服务器地址",
         "serverAddrPlaceholder": "example.com",
         "serverPort": "服务器端口",
         "protocol": "传输协议",
-        "user": "用户名"
+        "user": "用户名",
+        "serverConfig": "服务器配置"
     },
     "auth": {
         "title": "认证设置",
@@ -165,7 +174,9 @@
         "pleaseEnterRemotePort": "请输入远程端口",
         "pleaseEnterDomain": "请输入自定义域名或子域名",
         "manageProxyRules": "管理代理规则",
-        "configDetails": "配置详情"
+        "configDetails": "配置详情",
+        "configSummary": "配置摘要",
+        "totalProxies": "共 {{count}} 个代理"
     },
     "visitor": {
         "title": "访问者",
@@ -201,7 +212,8 @@
         "disableVisitorDesc": "暂时禁用此访问者规则",
         "pleaseEnterVisitorName": "请输入访问者名称",
         "pleaseEnterServerName": "请输入服务端名称",
-        "pleaseEnterBindPort": "请输入绑定端口"
+        "pleaseEnterBindPort": "请输入绑定端口",
+        "totalVisitors": "共 {{count}} 个访问者"
     },
     "quickAdd": {
         "title": "快速添加代理",

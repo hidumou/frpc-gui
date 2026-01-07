@@ -5,6 +5,7 @@ import * as os from 'os'
 import { app } from 'electron'
 import { EventEmitter } from 'events'
 import { ConfigStore } from './config-store'
+import { parse } from 'smol-toml'
 
 export enum ConfigState {
   Unknown = 0,
@@ -112,7 +113,27 @@ export class FrpcManager extends EventEmitter {
       // Generate temp config file
       const configContent = this.configStore.generateFrpcConfig(id)
       const tempConfigPath = path.join(app.getPath('temp'), `frpc-${id}.toml`)
+
+      // 验证生成的 TOML 配置
+      try {
+        const parsed = parse(configContent)
+        const parsedData = parsed as Record<string, unknown>
+        console.log(`[frpc:${id}] Generated config validation:`, {
+          hasProxies: !!parsedData.proxies,
+          hasVisitors: !!parsedData.visitors,
+          proxyCount: Array.isArray(parsedData.proxies) ? parsedData.proxies.length : 0,
+          visitorCount: Array.isArray(parsedData.visitors) ? parsedData.visitors.length : 0,
+        })
+        this.emitLog(id, 'info', `Configuration loaded: ${parsedData.proxyCount || 0} proxies, ${parsedData.visitorCount || 0} visitors`)
+      } catch (error) {
+        console.error(`[frpc:${id}] Generated invalid TOML:`, error)
+        this.emitLog(id, 'error', `Failed to validate configuration: ${error}`)
+        throw new Error(`Generated invalid TOML config: ${error}`)
+      }
+
+      // 写入临时配置文件
       fs.writeFileSync(tempConfigPath, configContent, 'utf-8')
+      console.log(`[frpc:${id}] Config written to: ${tempConfigPath}`)
 
       // Start frpc process
       const proc = spawn(this.frpcPath, ['-c', tempConfigPath], {

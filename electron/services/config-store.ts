@@ -171,12 +171,20 @@ export class ConfigStore {
     delete tomlData._frpgui_name
     delete tomlData._frpgui_manual_start
 
+    // Filter out UI-specific fields from proxies
     if (config.proxies && config.proxies.length > 0) {
-      tomlData.proxies = config.proxies
+      tomlData.proxies = config.proxies.map((proxy) => {
+        const { disabled, ...proxyData } = proxy as Record<string, unknown>
+        return proxyData
+      })
     }
 
+    // Filter out UI-specific fields from visitors
     if (config.visitors && config.visitors.length > 0) {
-      tomlData.visitors = config.visitors
+      tomlData.visitors = config.visitors.map((visitor) => {
+        const { disabled, ...visitorData } = visitor as Record<string, unknown>
+        return visitorData
+      })
     }
 
     const content = stringify(tomlData)
@@ -203,12 +211,20 @@ export class ConfigStore {
     delete tomlData._frpgui_name
     delete tomlData._frpgui_manual_start
 
+    // Filter out UI-specific fields from proxies
     if (config.proxies && config.proxies.length > 0) {
-      tomlData.proxies = config.proxies
+      tomlData.proxies = config.proxies.map((proxy) => {
+        const { disabled, ...proxyData } = proxy as Record<string, unknown>
+        return proxyData
+      })
     }
 
+    // Filter out UI-specific fields from visitors
     if (config.visitors && config.visitors.length > 0) {
-      tomlData.visitors = config.visitors
+      tomlData.visitors = config.visitors.map((visitor) => {
+        const { disabled, ...visitorData } = visitor as Record<string, unknown>
+        return visitorData
+      })
     }
 
     return stringify(tomlData)
